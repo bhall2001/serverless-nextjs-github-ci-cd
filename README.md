@@ -9,6 +9,9 @@ This is an opinionated view of how to setup a [Next.js](https://nextjs.org/) pro
 - [Motivation](#motivation)
 - [Overview](#overview)
 - [Getting started](#getting-started)
+- [Install serverless](#install-serverless)
+- [Configuration file](configuration-file)
+- [Create S3 serverless assets storage bucket](create-S3-serverless-assets-storage-bucket) -[Create serverless-staging.yml](create-serverless-staging.yml)
 
 ## Motivation
 
@@ -51,7 +54,7 @@ cd serverless-nextjs-github-ci-cd
 npm is used throughtout this guide so we need to do a little cleanup to remove yarn.lock and create a package-lock.json file
 
 ```bash
-rm yarn.lock && npm i --package-lock-only
+rm yarn.lock && npm install --package-lock-only
 ```
 
 _The ci process requires that the package-lock.json file is tracked. Please ensure you commit package-lock.json to your repository._
@@ -66,4 +69,71 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Congratulations, you now have a working local development environment.
 
-Commit changes to your repository.
+Commit changes.
+
+## Install serverless
+
+Installing the serverless framework as a development dependency results in advantages later on with the ci process.
+
+```bash
+npm install serverless@1.74.1 --save-dev
+```
+
+_note: the repo pins version numbers that are known to work_
+
+## Configuration file
+
+create next.config.js at the root directory
+
+```bash
+touch next.config.js
+```
+
+with
+
+```javascript
+module.exports = {
+  target: 'serverless',
+};
+```
+
+## Create S3 serverless assets storage bucket
+
+An S3 bucket is needed to store deployment configurations for the serverless-nextjs component. A single bucket can be used for all serverless-nextjs project.
+
+Create an S3 bucket named `<YOUR_AWS_USERNAME>-serverless-state-bucket`. Select the settings you'd wish. In general the default options are good. Be sure that "Block all public access" is checked.
+
+## Create serverless-staging.yml
+
+We will not create the serverless file used to setup the staging environment. In our scenerio there are 3 environments:
+
+- dev: local development
+- staging: non production preview of dev environment depoloyed to AWS
+- prod: the "live" site that users access on AWS
+
+Each environment requires it's own serverless config file. In a future step, a github action copies this file to serverless.yml. An advantage of this method is you are able to configure your serverless environments with differently (or not). It's up to you. In this example, publicDirectoryCache is set to false. For the production version we'll set this to true (when we get there).
+
+```bash
+touch serverless-staging.yml
+```
+
+Here is a sample staging serverless configuration file.
+
+```yaml
+# serverless-staging.yml
+name: staging-your-site-name
+
+dev-bobhall-net:
+  component: serverless-next.js@1.14.0
+  inputs:
+    bucketname: staging-your-site-name-s3
+    description: '*lambda-type*@Edge for staging-your-site-name'
+    name:
+      defaultLambda: staging-your-site-name-lambda
+      apiLambda: staging-your-site-name-lambda
+    domain: ['staging-your-site-name', 'bobhall.net']
+    publicDirectoryCache: false
+    runtime:
+      defaultLambda: 'nodejs12.x'
+      apiLambda: 'nodejs12.x'
+```

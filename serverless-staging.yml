@@ -1,0 +1,14 @@
+name: staging-your-site-name
+
+dev-bobhall-net:
+  component: serverless-next.js@1.14.0
+  inputs:
+    bucketname: staging-your-site-name-s3
+    name:
+      defaultLambda: staging-your-site-name-lambda
+      apiLambda: staging-your-site-name-lambda
+    domain: ["staging-your-site-name", "bobhall.net"]
+    publicDirectoryCache: false
+    runtime:
+      defaultLambda: "nodejs12.x"
+      apiLambda: "nodejs12.x"

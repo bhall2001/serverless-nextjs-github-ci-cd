@@ -278,6 +278,7 @@ jobs:
       - name: Serverless AWS authentication
         run: npx serverless --component=serverless-next config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      # comment out these lines until after first successful deployment
       # - name: Download `.serverless` state from S3
       #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless .serverless --delete
 

@@ -133,7 +133,7 @@ Here is a sample "staging" serverless configuration file.
 # serverless-staging.yml
 name: staging-your-site-name
 
-dev-bobhall-net:
+staging-your-site-name-bobhall-net:
   component: serverless-next.js@1.14.0
   inputs:
     bucketname: staging-your-site-name-s3
@@ -224,7 +224,7 @@ Sample production serverless configuration. This allows you to have different co
 # serverless-prod.yml
 name: prod-your-site-name
 
-dev-bobhall-net:
+prod-your-site-name-bobhall-net:
   component: serverless-next.js@1.14.0
   inputs:
     bucketname: prod-your-site-name-s3
@@ -248,7 +248,8 @@ Sample production Github Action
 name: Deploy prod-your-site-name
 on:
   push:
-    branches: [master]
+    tags: # Deploy tag (e.g. v1.0) to production
+      - 'v**'
 jobs:
   deploy-prod:
     runs-on: ubuntu-latest
@@ -286,3 +287,7 @@ jobs:
       - name: Upload `.serverless` state to S3
         run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless --delete
 ```
+
+## Deploy to Production
+
+Commit changes and push. This will trigger the staging deploy. Wait for this deployment to complete.

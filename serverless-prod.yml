@@ -1,6 +1,6 @@
 name: prod-your-site-name
 
-dev-bobhall-net:
+prod-your-site-name-bobhall-net:
   component: serverless-next.js@1.14.0
   inputs:
     bucketname: prod-your-site-name-s3

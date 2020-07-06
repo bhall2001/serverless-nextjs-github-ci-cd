@@ -4,7 +4,8 @@
 name: Deploy prod-your-site-name
 on:
   push:
-    branches: [master]
+    tags: # Deploy tag (e.g. v1.0) to production
+      - "v**"
 jobs:
   deploy-prod:
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 name: staging-your-site-name
 
-dev-bobhall-net:
+staging-your-site-name-bobhall-net:
   component: serverless-next.js@1.14.0
   inputs:
     bucketname: staging-your-site-name-s3

@@ -19,23 +19,23 @@ There is a desire to implement ci/cd process with environments where checking in
 
 ## Overview
 
-This is an example of how to setup ci/cd for a project using the awesome serverless nextjs component. Github Actions are used to create a basic ci/cd workflow where commits to origin/master branch generate a staging environment while creating a release by tagging a commit generates the production environment.
+This is an example of how to setup ci/cd for a project using the awesome serverless nextjs component. Github Actions are used to create a basic ci/cd workflow where commits to master branch deploy a staging environment while creating a release by tagging a commit deploy the production environment.
 
 The implementation is not for the faint of heart. Bootstrapping your project's resources requires manual steps and "priming the pump". The setup is not ideal for sure. However, once you get past the initial deployment, you will find the ci/cd to just work.
 
-The steps below take you through the exact steps used to deploy this repo to Lambda@Edge. Hopefully you can follow along. To cut to the chace simply clone this repo for as a starter and filling in evn variables as needed.
+The steps below take you through the exact steps to deploy this repo to Lambda@Edge. Hopefully you can follow along. To cut to the chase simply clone this repo for as a starter and filling in evn variables as needed.
 
 If you're interested, please follow along as you are guided through setting up your serverless-nextjs project for automated ci/cd with Github actions.
 
-Note: this is likely a temporary solution until serverless-nextjs supports serverleess framework component v2.
+Note: this is likely a temporary solution until serverless-nextjs supports serverless framework component v2.
 
 ## Getting started
 
 Our goal is to deploy a project generated with create-next-app and serverless nextjs to staging and production environments simply by checking into the master branch and tagging a commit with a version number.
 
-First, create a new repository on Github. Afterall we intend to deploy staging and production environments automatically from Github ;-)
+First, create a new repository on Github. After all we intend to deploy staging and production environments automatically from Github ;-)
 
-Besure to clone the repository to your local develement environment.
+Be sure to clone the repository to your local development environment.
 
 Next, create a new nextjs application.
 
@@ -51,7 +51,7 @@ Once installation is complete navigate to the project's home directory.
 cd serverless-nextjs-github-ci-cd
 ```
 
-npm is used throughtout this guide so we need to do a little cleanup to remove yarn.lock and create a package-lock.json file
+npm is used throughout this guide so we need to do a little cleanup to remove yarn.lock and create a package-lock.json file
 
 ```bash
 rm yarn.lock && npm install --package-lock-only
@@ -103,21 +103,31 @@ An S3 bucket is needed to store deployment configurations for the serverless-nex
 
 Create an S3 bucket named `<YOUR_AWS_USERNAME>-serverless-state-bucket`. Select the settings you'd wish. In general the default options are good. Be sure that "Block all public access" is checked.
 
-## Create serverless-staging.yml
+## Setup Github secrets
 
-We will not create the serverless file used to setup the staging environment. In our scenerio there are 3 environments:
+Github actions requires your AWS key and secret. These need to be added to your Github account as environment variables.
+
+Log in to your Github account and navigate to Settings. Select Secrets in the left sidebar. Click New Secret to add `AWS_ACCESS_KEY_ID`. Click New Secret to add `AWS_SECRET_ACCESS_KEY`.
+
+## High level environment setup steps
+
+In our scenario there are 3 environments:
 
 - dev: local development
-- staging: non production preview of dev environment depoloyed to AWS
+- staging: non production preview of dev environment deployed to AWS
 - prod: the "live" site that users access on AWS
 
-Each environment requires it's own serverless config file. In a future step, a github action copies this file to serverless.yml. An advantage of this method is you are able to configure your serverless environments with differently (or not). It's up to you. In this example, publicDirectoryCache is set to false. For the production version we'll set this to true (when we get there).
+staging and prod environments require their own serverless config file. Setting up a new environment has a similar recipe to the steps below.
 
-```bash
-touch serverless-staging.yml
-```
+- create a serverless-[ENVIRONMENT].yml file with environment configuration
+- create a github action for the environment
+- comment out download of serverless state from S3 in Github action (does not exist until after first deploy)
+- run the serverless command
+- uncomment out download of serverless state from S3 in Github action (now it exists so future deployments can download from the S3 bucket)
 
-Here is a sample staging serverless configuration file.
+## Create serverless-[environment].yml
+
+Here is a sample "staging" serverless configuration file.
 
 ```yaml
 # serverless-staging.yml
@@ -136,4 +146,62 @@ dev-bobhall-net:
     runtime:
       defaultLambda: 'nodejs12.x'
       apiLambda: 'nodejs12.x'
+```
+
+## Create staging Github action
+
+```yaml
+# .github/workflows/staging.yml
+#
+# Github Action for Serverless NextJS
+#
+# Create AWS_KEY and AWS_SECRET in Github repository settings
+# Create dev-serverless.yml and prod-serverless.yml in proj root
+#
+# Master branch is deployed as DEV. Tags starting with "v" (ie. v1.0, v1.0.1, etc)
+# deploy as PROD
+#
+name: Deploy staging-your-site-name
+on:
+  push:
+    branches: [master]
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: canastro/copy-file-action@master
+        with:
+          source: 'serverless-staging.yml'
+          target: 'serverless.yml'
+
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # - name: Run tests
+      #   run: npm run test:ci
+
+      - name: Serverless AWS authentication
+        run: npx serverless --component=serverless-next config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # - name: Download `.serverless` state from S3
+      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/staging-your-site-name/staging/.serverless .serverless --delete
+
+      - name: Deploy to AWS
+        run: npx serverless
+
+      - name: Upload `.serverless` state to S3
+        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/staging-your-site-name/staging/.serverless --delete
 ```

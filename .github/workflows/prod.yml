@@ -1,12 +1,12 @@
 #
-# Github Action for Serverless NextJS staging environment
+# Github Action for Serverless NextJS production environment
 #
-name: Deploy staging-your-site-name
+name: Deploy prod-your-site-name
 on:
   push:
     branches: [master]
 jobs:
-  deploy-staging:
+  deploy-prod:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
 
       - uses: canastro/copy-file-action@master
         with:
-          source: "serverless-staging.yml"
+          source: "serverless-prod.yml"
           target: "serverless.yml"
 
       - uses: actions/setup-node@v2-beta
@@ -30,18 +30,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Run tests
-      #   run: npm run test:ci
-
       - name: Serverless AWS authentication
         run: npx serverless --component=serverless-next config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # uncomment after first successful deployment
       # - name: Download `.serverless` state from S3
-      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/staging-your-site-name/staging/.serverless .serverless --delete
+      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless .serverless --delete
 
       - name: Deploy to AWS
         run: npx serverless
 
       - name: Upload `.serverless` state to S3
-        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/staging-your-site-name/staging/.serverless --delete
+        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless --delete

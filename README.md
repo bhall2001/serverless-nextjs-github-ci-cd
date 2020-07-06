@@ -153,13 +153,7 @@ dev-bobhall-net:
 ```yaml
 # .github/workflows/staging.yml
 #
-# Github Action for Serverless NextJS
-#
-# Create AWS_KEY and AWS_SECRET in Github repository settings
-# Create dev-serverless.yml and prod-serverless.yml in proj root
-#
-# Master branch is deployed as DEV. Tags starting with "v" (ie. v1.0, v1.0.1, etc)
-# deploy as PROD
+# Github Action for Serverless NextJS staging environment
 #
 name: Deploy staging-your-site-name
 on:
@@ -204,4 +198,91 @@ jobs:
 
       - name: Upload `.serverless` state to S3
         run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/staging-your-site-name/staging/.serverless --delete
+```
+
+## Initial push
+
+The first push after setting up the Github Action your serverless state bucket will not have a .serverless file. The serverless-staging.yml file has this step commented out.
+
+Commit your changes and push to Github. The push triggers your workflow to come to life to execute the ci/cd steps.
+
+If all goes well, after about 15 minutes, your staging environment is available. The initial deploy takes some time to set up and for the new endpoint to become available. Now that everything is setup, deployments go much faster.
+
+## Finalize staging setup and test
+
+Once the site is available at the endpoint, remove the comments the lines to download the .serverless directory from the S3 bucket.
+
+Commit the changes and push to Github.
+
+Congratulations! You now have a ci/cd process for staging.
+
+## Create production configuration
+
+Sample production serverless configuration. This allows you to have different configurations for staging/production. In the setup below the publicDirectoryCache is set to true.
+
+```yaml
+# serverless-prod.yml
+name: prod-your-site-name
+
+dev-bobhall-net:
+  component: serverless-next.js@1.14.0
+  inputs:
+    bucketname: prod-your-site-name-s3
+    name:
+      defaultLambda: prod-your-site-name-lambda
+      apiLambda: prod-your-site-name-lambda
+    domain: ['prod-your-site-name', 'bobhall.net']
+    publicDirectoryCache: true
+    runtime:
+      defaultLambda: 'nodejs12.x'
+      apiLambda: 'nodejs12.x'
+```
+
+Sample production Github Action
+
+```yaml
+# .github/workflows/prod.yml
+#
+# Github Action for Serverless NextJS production environment
+#
+name: Deploy prod-your-site-name
+on:
+  push:
+    branches: [master]
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: canastro/copy-file-action@master
+        with:
+          source: 'serverless-prod.yml'
+          target: 'serverless.yml'
+
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Serverless AWS authentication
+        run: npx serverless --component=serverless-next config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # - name: Download `.serverless` state from S3
+      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless .serverless --delete
+
+      - name: Deploy to AWS
+        run: npx serverless
+
+      - name: Upload `.serverless` state to S3
+        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless --delete
 ```

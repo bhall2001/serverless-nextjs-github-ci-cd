@@ -1,9 +1,10 @@
 name: prod-your-site-name
 
-prod-your-site-name-bobhall-net:
+prod-your-site-name:
   component: serverless-next.js@1.14.0
   inputs:
-    bucketname: prod-your-site-name-s3
+    bucketName: prod-your-site-name-s3
+    description: "*lambda-type*@Edge for prod-your-site-name"
     name:
       defaultLambda: prod-your-site-name-lambda
       apiLambda: prod-your-site-name-lambda

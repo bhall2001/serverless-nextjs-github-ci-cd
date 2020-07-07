@@ -1,9 +1,10 @@
 name: staging-your-site-name
 
-staging-your-site-name-bobhall-net:
+staging-your-site-name:
   component: serverless-next.js@1.14.0
   inputs:
-    bucketname: staging-your-site-name-s3
+    bucketName: staging-your-site-name-s3
+    description: "*lambda-type*@Edge for staging-your-site-name"
     name:
       defaultLambda: staging-your-site-name-lambda
       apiLambda: staging-your-site-name-lambda

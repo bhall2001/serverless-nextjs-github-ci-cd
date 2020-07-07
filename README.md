@@ -133,10 +133,10 @@ Here is a sample "staging" serverless configuration file.
 # serverless-staging.yml
 name: staging-your-site-name
 
-staging-your-site-name-bobhall-net:
+staging-your-site-name:
   component: serverless-next.js@1.14.0
   inputs:
-    bucketname: staging-your-site-name-s3
+    bucketName: staging-your-site-name-s3
     description: '*lambda-type*@Edge for staging-your-site-name'
     name:
       defaultLambda: staging-your-site-name-lambda
@@ -191,13 +191,13 @@ jobs:
         run: npx serverless --component=serverless-next config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       # - name: Download `.serverless` state from S3
-      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/staging-your-site-name/staging/.serverless .serverless --delete
+      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/your-site-name/staging/.serverless .serverless --delete
 
       - name: Deploy to AWS
         run: npx serverless
 
       - name: Upload `.serverless` state to S3
-        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/staging-your-site-name/staging/.serverless --delete
+        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/your-site-name/staging/.serverless --delete
 ```
 
 ## Initial push
@@ -216,7 +216,7 @@ Once the site is available at the endpoint, remove the comments the lines in `.g
 
 Commit the changes and push to Github.
 
-Congratulations! You now have a ci/cd process for staging.
+Congratulations! You now have a ci/cd process for staging when commits are made to the master branch.
 
 ## Create production configuration
 
@@ -226,10 +226,11 @@ Sample production serverless configuration. This allows you to have different co
 # serverless-prod.yml
 name: prod-your-site-name
 
-prod-your-site-name-bobhall-net:
+prod-your-site-name:
   component: serverless-next.js@1.14.0
   inputs:
-    bucketname: prod-your-site-name-s3
+    bucketName: prod-your-site-name-s3
+    description: '*lambda-type*@Edge for prod-your-site-name'
     name:
       defaultLambda: prod-your-site-name-lambda
       apiLambda: prod-your-site-name-lambda
@@ -280,17 +281,32 @@ jobs:
       - name: Serverless AWS authentication
         run: npx serverless --component=serverless-next config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # comment out these lines until after first successful deployment
       # - name: Download `.serverless` state from S3
-      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless .serverless --delete
+      #   run: aws s3 sync s3://bhall2001-serverless-state-bucket/your-site-name/prod/.serverless .serverless --delete
 
       - name: Deploy to AWS
         run: npx serverless
 
       - name: Upload `.serverless` state to S3
-        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/prod-your-site-name/prod/.serverless --delete
+        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/your-site-name/prod/.serverless --delete
 ```
 
 ## Deploy to Production
 
-Commit changes and push. This will trigger the staging deploy. Wait for this deployment to complete.
+First, we need to commit these changes and push to the master branch. This will trigger the staging deploy. Wait for this deployment to complete.
+
+Using Github web ui, locate the "Release" panel in the right sidebar while in "Code" of your repository. Click "Create a new release"
+
+Release version numbers must follow the pattern of "vX.Y.Z" (wihtout quotes and v is required). Tag Version as v1.0.0. Add a title and/or a description to the release.
+
+_The next step will deploy your project to your "production" environment. DO NOT DO THE NEXT STEP UNTIL YOU ARE READY TO DEPLOY TO PRODUCTION._
+
+Click the "Publish release" button.
+
+Congratulations. You have just deployed your serverless nextjs website to the world!
+
+## Finalize Production CI/CD
+
+We have one last step to do before we can call it a victory. Uncomment the code to enable the production .serverless directory from the S3 bucket in `.github/workflows/prod.yml`.
+
+Commit these changes to master. What for the staging ci/cd to complete. Then create v1.0.1 release to confirm the final workflow deploys successfully.

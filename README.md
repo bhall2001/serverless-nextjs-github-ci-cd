@@ -202,15 +202,17 @@ jobs:
 
 ## Initial push
 
-The first push after setting up the Github Action your serverless state bucket will not have a .serverless file. The serverless-staging.yml file has this step commented out.
+The first push after setting up the Github Action your serverless state bucket will not have a .serverless directory (required when deploying your website). The serverless-staging.yml file should have these lines commented out for the initial commit/push.
 
 Commit your changes and push to Github. The push triggers your workflow to come to life to execute the ci/cd steps.
+
+\_I've found that when using bucketName the initial deployment may fail with an error about the bucket not having transfer acceleration. If this happens, simply re-run the full github action in the Github ui.
 
 If all goes well, after about 15 minutes, your staging environment is available. The initial deploy takes some time to set up and for the new endpoint to become available. Now that everything is setup, deployments go much faster.
 
 ## Finalize staging setup and test
 
-Once the site is available at the endpoint, remove the comments the lines to download the .serverless directory from the S3 bucket.
+Once the site is available at the endpoint, remove the comments the lines in `.github/workflows/staging.yml` to enable downloading the .serverless directory from the S3 bucket during the ci/cd process.
 
 Commit the changes and push to Github.
 

@@ -2,6 +2,10 @@
 
 This is an opinionated view of how to setup a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) using [Serverless Nextjs Component](https://github.com/serverless-nextjs/serverless-next.js) with GitHub Actions for ci/cd.
 
+## Motivation
+
+There is a desire to implement ci/cd process with the Serverless Nextjs Component with environments where checking into a branch in a GitHub repository performs ci/cd tasks resulting in a staging environment while tagging a commit with a version number (or creating a release in GitHub) performs ci/cd tasks for a production environment.
+
 Sites from ci/cd process:
 
 [Resulting staging environment](https://staging-your-site-name.bobhall.net)
@@ -10,7 +14,6 @@ Sites from ci/cd process:
 
 ## Contents
 
-- [Motivation](#motivation)
 - [Overview](#overview)
 - [Getting started](#getting-started)
 - [Install serverless](#install-serverless)
@@ -27,10 +30,6 @@ Sites from ci/cd process:
 - [Finalize Production CI/CD](#finalize-production-ci/cd)
 - [Inspired by](#inspired-by)
 
-## Motivation
-
-There is a desire to implement ci/cd process with environments where checking into a branch in a GitHub repository performs ci/cd tasks resulting in a staging environment while tagging a commit with a version number (or creating a release in GitHub) performs ci/cd tasks for a production environment.
-
 ## Overview
 
 This is an example of how to setup ci/cd for a project using the awesome serverless nextjs component. GitHub Actions are used to create a basic ci/cd workflow where commits to master branch deploy a staging environment while creating a release by tagging a commit deploy the production environment.
@@ -39,7 +38,9 @@ The implementation is not for the faint of heart. Bootstrapping your project's r
 
 The steps below take you through the exact steps to deploy this repo to Lambda@Edge. Hopefully you can follow along. To cut to the chase simply clone this repo for as a starter and filling in evn variables as needed.
 
-If you're interested, please follow along as you are guided through setting up your serverless-nextjs project for automated ci/cd with Github actions.
+It is presumed that you know how to use git, GitHub, GitHub Actions, aws, the aws cli and understand what the Serverless Nextjs Component is and how it works. This process also requires that you have a domain managed by aws (Route 53) that is the targeted deployment domain.
+
+If you're not scared away yet, please follow along as you are guided through setting up your serverless-nextjs project for automated ci/cd with Github Actions.
 
 Note: this is likely a temporary solution until serverless-nextjs supports serverless framework component v2.
 

@@ -1,5 +1,5 @@
 #
-# Github Action for Serverless NextJS production environment
+# GitHub Action for Serverless NextJS production environment
 #
 name: Deploy prod-your-site-name
 on:
@@ -34,8 +34,10 @@ jobs:
       - name: Serverless AWS authentication
         run: npx serverless --component=serverless-next config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      # comment out this section on initial deploy
       - name: Download `.serverless` state from S3
         run: aws s3 sync s3://bhall2001-serverless-state-bucket/your-site-name/prod/.serverless .serverless --delete
+      # end comment out this section on initial deploy
 
       - name: Deploy to AWS
         run: npx serverless

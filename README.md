@@ -1,8 +1,12 @@
 # serverless-nextjs-github-ci-cd
 
-## WORK IN PROGRESS NOT COMPLETE IF YOU SEE THIS MESSAGE
+This is an opinionated view of how to setup a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) using [Serverless Nextjs Component](https://github.com/serverless-nextjs/serverless-next.js) with GitHub Actions for ci/cd.
 
-This is an opinionated view of how to setup a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) using [Serverless Nextjs Component](https://github.com/serverless-nextjs/serverless-next.js) with Github Actions for ci/cd.
+Sites from ci/cd process:
+
+[Resulting staging environment](https://staging-your-site-name.bobhall.net)
+
+[Resulting production environment](https://prod-your-site-name.bobhall.net)
 
 ## Contents
 
@@ -10,16 +14,26 @@ This is an opinionated view of how to setup a [Next.js](https://nextjs.org/) pro
 - [Overview](#overview)
 - [Getting started](#getting-started)
 - [Install serverless](#install-serverless)
-- [Configuration file](configuration-file)
-- [Create S3 serverless assets storage bucket](create-S3-serverless-assets-storage-bucket) -[Create serverless-staging.yml](create-serverless-staging.yml)
+- [Configuration file](#configuration-file)
+- [Create S3 serverless assets storage bucket](#create-S3-serverless-assets-storage-bucket)
+- [Setup GitHub secrets](#setup-github-secrets)
+- [High level environment setup steps](#high-level-environment-setup-steps)
+- [Create serverless-ENVIRONMENT.yml](#create-serverless-environment.yml)
+- [Create staging GitHub action](#create-staging-github-action)
+- [Initial push](#initial-push)
+- [Finalize staging setup and test](#finalize-staging-setup-and-test)
+- [Create production configuration](#create-production-configuration)
+- [Deploy to production](#deploy-to-production)
+- [Finalize Production CI/CD](#finalize-production-ci/cd)
+- [Inspired by](#inspired-by)
 
 ## Motivation
 
-There is a desire to implement ci/cd process with environments where checking into a branch in a Github repository performs ci/cd tasks resulting in a staging environment while tagging a commit with a version number (or creating a release in Github) performs ci/cd tasks for a production environment.
+There is a desire to implement ci/cd process with environments where checking into a branch in a GitHub repository performs ci/cd tasks resulting in a staging environment while tagging a commit with a version number (or creating a release in GitHub) performs ci/cd tasks for a production environment.
 
 ## Overview
 
-This is an example of how to setup ci/cd for a project using the awesome serverless nextjs component. Github Actions are used to create a basic ci/cd workflow where commits to master branch deploy a staging environment while creating a release by tagging a commit deploy the production environment.
+This is an example of how to setup ci/cd for a project using the awesome serverless nextjs component. GitHub Actions are used to create a basic ci/cd workflow where commits to master branch deploy a staging environment while creating a release by tagging a commit deploy the production environment.
 
 The implementation is not for the faint of heart. Bootstrapping your project's resources requires manual steps and "priming the pump". The setup is not ideal for sure. However, once you get past the initial deployment, you will find the ci/cd to just work.
 
@@ -33,7 +47,7 @@ Note: this is likely a temporary solution until serverless-nextjs supports serve
 
 Our goal is to deploy a project generated with create-next-app and serverless nextjs to staging and production environments simply by checking into the master branch and tagging a commit with a version number.
 
-First, create a new repository on Github. After all we intend to deploy staging and production environments automatically from Github ;-)
+First, create a new repository on GitHub. After all we intend to deploy staging and production environments automatically from Github ;-)
 
 Be sure to clone the repository to your local development environment.
 
@@ -103,11 +117,11 @@ An S3 bucket is needed to store deployment configurations for the serverless-nex
 
 Create an S3 bucket named `<YOUR_AWS_USERNAME>-serverless-state-bucket`. Select the settings you'd wish. In general the default options are good. Be sure that "Block all public access" is checked.
 
-## Setup Github secrets
+## Setup GitHub secrets
 
-Github actions requires your AWS key and secret. These need to be added to your Github account as environment variables.
+GitHub actions requires your AWS key and secret. These need to be added to your GitHub account as environment variables.
 
-Log in to your Github account and navigate to Settings. Select Secrets in the left sidebar. Click New Secret to add `AWS_ACCESS_KEY_ID`. Click New Secret to add `AWS_SECRET_ACCESS_KEY`.
+Log in to your GitHub account and navigate to Settings. Select Secrets in the left sidebar. Click New Secret to add `AWS_ACCESS_KEY_ID`. Click New Secret to add `AWS_SECRET_ACCESS_KEY`.
 
 ## High level environment setup steps
 
@@ -119,13 +133,13 @@ In our scenario there are 3 environments:
 
 staging and prod environments require their own serverless config file. Setting up a new environment has a similar recipe to the steps below.
 
-- create a serverless-[ENVIRONMENT].yml file with environment configuration
-- create a github action for the environment
-- comment out download of serverless state from S3 in Github action (does not exist until after first deploy)
-- run the serverless command
-- uncomment out download of serverless state from S3 in Github action (now it exists so future deployments can download from the S3 bucket)
+- create a serverless-ENVIRONMENT.yml file with environment configuration
+- create a GitHub action for the environment
+- comment out download of serverless state from S3 in GitHub action (does not exist until after first deploy)
+- execute a GitHub Action which runs the serverless command
+- uncomment out download of serverless state from S3 in GitHub action (now the .serverless directory exists in the S3 bucket so future deployments can download the directory)
 
-## Create serverless-[environment].yml
+## Create serverless-ENVIRONMENT.yml
 
 Here is a sample "staging" serverless configuration file.
 
@@ -148,12 +162,12 @@ staging-your-site-name:
       apiLambda: 'nodejs12.x'
 ```
 
-## Create staging Github action
+## Create staging GitHub action
 
 ```yaml
 # .github/workflows/staging.yml
 #
-# Github Action for Serverless NextJS staging environment
+# GitHub Action for Serverless NextJS staging environment
 #
 name: Deploy staging-your-site-name
 on:
@@ -202,25 +216,27 @@ jobs:
 
 ## Initial push
 
-The first push after setting up the Github Action your serverless state bucket will not have a .serverless directory (required when deploying your website). The serverless-staging.yml file should have these lines commented out for the initial commit/push.
+The first push after setting up the GitHub Action our serverless state bucket does not have a .serverless directory (required when deploying your website). The .serverless directory is copied to the S3 bucket on the first run of our process. Be sure the serverless-staging.yml file has these lines commented out for the initial commit/push.
 
-Commit your changes and push to Github. The push triggers your workflow to come to life to execute the ci/cd steps.
+Commit your changes and push to GitHub. The push triggers your workflow to come to life executing the ci/cd steps.
 
-\_I've found that when using bucketName the initial deployment may fail with an error about the bucket not having transfer acceleration. If this happens, simply re-run the full github action in the Github ui.
+_I've found that when using bucketName the initial deployment may fail with an error about the bucket not having transfer acceleration. If this happens, simply re-run the full GitHub action in the GitHub ui._
 
 If all goes well, after about 15 minutes, your staging environment is available. The initial deploy takes some time to set up and for the new endpoint to become available. Now that everything is setup, deployments go much faster.
 
 ## Finalize staging setup and test
 
-Once the site is available at the endpoint, remove the comments the lines in `.github/workflows/staging.yml` to enable downloading the .serverless directory from the S3 bucket during the ci/cd process.
+Once the site is available at the endpoint, remove comments in `.github/workflows/staging.yml` to enable downloading the .serverless directory from the S3 bucket during next the ci/cd process.
 
 Commit the changes and push to Github.
 
 Congratulations! You now have a ci/cd process for staging when commits are made to the master branch.
 
+Going forward the .serverless directory is downloaded as a step in your ci/cd process.
+
 ## Create production configuration
 
-Sample production serverless configuration. This allows you to have different configurations for staging/production. In the setup below the publicDirectoryCache is set to true.
+Sample production serverless configuration. An advantage of separate files is that we are able to have different configurations for environments. In the setup below, the publicDirectoryCache is set to true.
 
 ```yaml
 # serverless-prod.yml
@@ -241,12 +257,12 @@ prod-your-site-name:
       apiLambda: 'nodejs12.x'
 ```
 
-Sample production Github Action
+Sample production GitHub Action
 
 ```yaml
 # .github/workflows/prod.yml
 #
-# Github Action for Serverless NextJS production environment
+# GitHub Action for Serverless NextJS production environment
 #
 name: Deploy prod-your-site-name
 on:
@@ -291,13 +307,13 @@ jobs:
         run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/your-site-name/prod/.serverless --delete
 ```
 
-## Deploy to Production
+## Deploy to production
 
 First, we need to commit these changes and push to the master branch. This will trigger the staging deploy. Wait for this deployment to complete.
 
-Using Github web ui, locate the "Release" panel in the right sidebar while in "Code" of your repository. Click "Create a new release"
+Using GitHub web ui, locate the "Release" panel in the right sidebar in the "Code" tab of your repository. Click "Create a new release" in the sidebar.
 
-Release version numbers must follow the pattern of "vX.Y.Z" (wihtout quotes and v is required). Tag Version as v1.0.0. Add a title and/or a description to the release.
+Release version numbers must follow the pattern of "vX.Y.Z" (without quotes, v is required). Tag Version as v1.0.0. Add a title and/or a description to the release.
 
 _The next step will deploy your project to your "production" environment. DO NOT DO THE NEXT STEP UNTIL YOU ARE READY TO DEPLOY TO PRODUCTION._
 
@@ -307,6 +323,18 @@ Congratulations. You have just deployed your serverless nextjs website to the wo
 
 ## Finalize Production CI/CD
 
-We have one last step to do before we can call it a victory. Uncomment the code to enable the production .serverless directory from the S3 bucket in `.github/workflows/prod.yml`.
+We have one last step to do before we can call it a victory. Uncomment the code to enable downloading the production .serverless directory from the S3 bucket in `.github/workflows/prod.yml`.
 
-Commit these changes to master. What for the staging ci/cd to complete. Then create v1.0.1 release to confirm the final workflow deploys successfully.
+```yaml
+- name: Download `.serverless` state from S3
+  run: aws s3 sync s3://bhall2001-serverless-state-bucket/your-site-name/prod/.serverless .serverless --delete
+```
+
+Commit these changes to master. What for the staging ci/cd to complete. Then create release v1.0.1 to confirm the final workflow deploys successfully. To create a new release click the Release title in the sidebar then the "Draft New Release" button.
+
+## Inspired by
+
+[Serverless Nextjs Component](https://github.com/serverless-nextjs/serverless-next.js#serverless-nextjs-component)
+[Serverless deploy with state management in S3 ](https://gist.github.com/hadynz/b4e190e0ce10e5811cb462920a9c678f)
+[Github Actions - Deploy Serverless Framework (AWS)](https://gist.github.com/maxkostinevich/9672966565aeb749d41e49673be4e7fa)
+[Copy File GitHub Action](https://github.com/marketplace/actions/copy-file)

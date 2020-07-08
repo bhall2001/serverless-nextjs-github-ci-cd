@@ -336,6 +336,9 @@ Commit these changes to master. What for the staging ci/cd to complete. Then cre
 ## Inspired by
 
 [Serverless Nextjs Component](https://github.com/serverless-nextjs/serverless-next.js#serverless-nextjs-component)
+
 [Serverless deploy with state management in S3 ](https://gist.github.com/hadynz/b4e190e0ce10e5811cb462920a9c678f)
+
 [Github Actions - Deploy Serverless Framework (AWS)](https://gist.github.com/maxkostinevich/9672966565aeb749d41e49673be4e7fa)
+
 [Copy File GitHub Action](https://github.com/marketplace/actions/copy-file)

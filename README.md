@@ -33,7 +33,7 @@ Sites from ci/cd process:
 
 ## Overview
 
-This is an example of how to setup ci/cd for a project using the awesome serverless nextjs component. GitHub Actions are used to create a basic ci/cd workflow where commits to master branch deploy a staging environment while creating a release by tagging a commit deploy the production environment.
+This is an example of how to setup ci/cd for a project using the awesome serverless nextjs component. GitHub Actions are used to create a basic ci/cd workflow where commits to main branch deploy a staging environment while creating a release by tagging a commit deploy the production environment.
 
 The implementation is not for the faint of heart. Bootstrapping your project's resources requires manual steps and "priming the pump". The setup is not ideal for sure. However, once you get past the initial deployment, you will find the ci/cd to just work.
 
@@ -47,7 +47,7 @@ Note: this is likely a temporary solution until serverless-nextjs supports serve
 
 ## Getting started
 
-Our goal is to deploy a project generated with create-next-app and serverless nextjs to staging and production environments simply by checking into the master branch and tagging a commit with a version number.
+Our goal is to deploy a project generated with create-next-app and serverless nextjs to staging and production environments simply by checking into the main branch and tagging a commit with a version number.
 
 First, create a new repository on GitHub. After all we intend to deploy staging and production environments automatically from Github ;-)
 
@@ -174,7 +174,7 @@ staging-your-site-name:
 name: Deploy staging-your-site-name
 on:
   push:
-    branches: [master]
+    branches: [main]
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest
@@ -232,7 +232,7 @@ Once the site is available at the endpoint, remove comments in `.github/workflow
 
 Commit the changes and push to Github.
 
-Congratulations! You now have a ci/cd process for staging when commits are made to the master branch.
+Congratulations! You now have a ci/cd process for staging when commits are made to the main branch.
 
 Going forward the .serverless directory is downloaded as a step in your ci/cd process.
 
@@ -311,7 +311,7 @@ jobs:
 
 ## Deploy to production
 
-First, we need to commit these changes and push to the master branch. This will trigger the staging deploy. Wait for this deployment to complete.
+First, we need to commit these changes and push to the main branch. This will trigger the staging deploy. Wait for this deployment to complete.
 
 Using GitHub web ui, locate the "Release" panel in the right sidebar in the "Code" tab of your repository. Click "Create a new release" in the sidebar.
 
@@ -332,7 +332,7 @@ We have one last step to do before we can call it a victory. Uncomment the code 
   run: aws s3 sync s3://bhall2001-serverless-state-bucket/your-site-name/prod/.serverless .serverless --delete
 ```
 
-Commit these changes to master. What for the staging ci/cd to complete. Then create release v1.0.1 to confirm the final workflow deploys successfully. To create a new release click the Release title in the sidebar then the "Draft New Release" button.
+Commit these changes to main. What for the staging ci/cd to complete. Then create release v1.0.1 to confirm the final workflow deploys successfully. To create a new release click the Release title in the sidebar then the "Draft New Release" button.
 
 ## Removing Serverless-nextjs
 

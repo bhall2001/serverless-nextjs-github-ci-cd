@@ -4,7 +4,7 @@
 name: Deploy staging-your-site-name
 on:
   push:
-    branches: [master]
+    branches: [main]
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest

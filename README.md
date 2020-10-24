@@ -340,19 +340,19 @@ Serverless remove does not work correctly with the serverless-nextjs component. 
 
 If you need to remove a nextjs application deployed with serverless-nextjs component, follow these steps:
 
-1. `serverless remove` from command line. You will get an error.
+1. `serverless remove` from command line.
 
 1. log in to aws console
 
-1. navigate to CloudFront and disable the Distribution for the deployed serverless-nextjs component
+1. navigate to CloudFront and disable the Distribution for the deployed serverless-nextjs component (be sure to select the correct distribution if you have many).
 
 1. wait about 5 minutes
 
-1. delete the Cloudfront distribution for the deployed serverless-nextjs component
+1. delete the CloudFront distribution for the deployed serverless-nextjs component (again make sure because there's no going back if you delete an incorrect distribution)
 
-1. wait about 15 minutes. During this time your Cloudfront distribution is deleted from edge locations
+1. wait about 15 minutes. During this time your CloudFront distribution is deleted from edge locations
 
-1. Once all the Cloudfront distributions have been deleted, delete the 2 lambda functions created by the serverless-nextjs component. NOTE: If you get an error that the lambda function can not be deleted, you need to wait longer. The time does vary to delete all the CloudFront distributions. I find 15 minutes is an average time.
+1. Now you can delete the Lambda function(s) created by the serverless-nextjs component. NOTE: If you get an error that the lambda function can not be deleted, you need to wait longer. The time does vary to delete all the CloudFront distributions. I find 15 minutes is an average time. There may be 1 or 2 lambda's -- one for content, one for api.
 
 You have now removed the serverless-nextjs deployment from aws.
 

@@ -28,6 +28,7 @@ Sites from ci/cd process:
 - [Create production configuration](#create-production-configuration)
 - [Deploy to production](#deploy-to-production)
 - [Finalize Production CI/CD](#finalize-production-ci/cd)
+- [Removing serverless-nextjs]#removing-serverless-nextjs
 - [Inspired by](#inspired-by)
 
 ## Overview
@@ -332,6 +333,28 @@ We have one last step to do before we can call it a victory. Uncomment the code 
 ```
 
 Commit these changes to master. What for the staging ci/cd to complete. Then create release v1.0.1 to confirm the final workflow deploys successfully. To create a new release click the Release title in the sidebar then the "Draft New Release" button.
+
+## Removing Serverless-nextjs
+
+Serverless remove does not work correctly with the serverless-nextjs component. This is not related to Github actions ci/cd but is an issue with the component itself.
+
+If you need to remove a nextjs application deployed with serverless-nextjs component, follow these steps:
+
+1. `serverless remove` from command line. You will get an error.
+
+1. log in to aws console
+
+1. navigate to CloudFront and disable the Distribution for the deployed serverless-nextjs component
+
+1. wait about 5 minutes
+
+1. delete the Cloudfront distribution for the deployed serverless-nextjs component
+
+1. wait about 15 minutes. During this time your Cloudfront distribution is deleted from edge locations
+
+1. Once all the Cloudfront distributions have been deleted, delete the 2 lambda functions created by the serverless-nextjs component. NOTE: If you get an error that the lambda function can not be deleted, you need to wait longer. The time does vary to delete all the CloudFront distributions. I find 15 minutes is an average time.
+
+You have now removed the serverless-nextjs deployment from aws.
 
 ## Inspired by
 

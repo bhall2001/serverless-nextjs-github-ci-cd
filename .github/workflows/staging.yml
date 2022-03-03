@@ -2,9 +2,14 @@
 # GitHub Action for Serverless NextJS staging environment
 #
 name: Deploy staging-your-site-name
+
 on:
   push:
     branches: [main]
+
+env:
+  SERVERLESS_STATE_BUCKET_PATH: s3://bhall2001-serverless-state-bucket/your-site-name/staging/.serverless
+
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest
@@ -39,11 +44,11 @@ jobs:
 
       # comment out this section on initial deploy
       - name: Download `.serverless` state from S3
-        run: aws s3 sync s3://bhall2001-serverless-state-bucket/your-site-name/staging/.serverless .serverless --delete
+        run: if [[ $(aws s3 ls ${{ env.SERVERLESS_STATE_BUCKET_PATH }} | head) ]]; then aws s3 sync ${{ env.SERVERLESS_STATE_BUCKET_PATH }} .serverless --delete; fi
       # end comment out this section on initial deploy
 
       - name: Deploy to AWS
         run: npx serverless
 
       - name: Upload `.serverless` state to S3
-        run: aws s3 sync .serverless s3://bhall2001-serverless-state-bucket/your-site-name/staging/.serverless --delete
+        run: aws s3 sync env.SERVERLESS_STATE_BUCKET_PATH --delete

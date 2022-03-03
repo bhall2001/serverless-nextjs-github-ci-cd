@@ -42,6 +42,7 @@ jobs:
       # comment out this section on initial deploy
       - name: Download `.serverless` state from S3
         run: if [[ $(aws s3 ls ${{ s3://bhall2001-serverless-state-bucket/your-site-name/staging }} | head) ]]; then aws s3 sync ${{ s3://bhall2001-serverless-state-bucket/your-site-name/staging/.serverless }} .serverless --delete; fi
+        shell: bash
       # end comment out this section on initial deploy
 
       - name: Deploy to AWS

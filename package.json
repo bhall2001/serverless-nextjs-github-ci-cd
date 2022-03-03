@@ -8,11 +8,11 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "9.4.4",
-    "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "next": "^12.1.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
   },
   "devDependencies": {
-    "serverless": "1.74.1"
+    "serverless": "^3.7.1"
   }
 }

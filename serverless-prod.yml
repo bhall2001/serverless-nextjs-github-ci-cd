@@ -11,5 +11,5 @@ prod-your-site-name:
     domain: ["prod-your-site-name", "bobhall.net"]
     publicDirectoryCache: true
     runtime:
-      defaultLambda: "nodejs12.x"
-      apiLambda: "nodejs12.x"
+      defaultLambda: "nodejs14.x"
+      apiLambda: "nodejs14.x"

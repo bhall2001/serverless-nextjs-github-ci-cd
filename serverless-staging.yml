@@ -11,5 +11,5 @@ staging-your-site-name:
     domain: ["staging-your-site-name", "bobhall.net"]
     publicDirectoryCache: false
     runtime:
-      defaultLambda: "nodejs12.x"
-      apiLambda: "nodejs12.x"
+      defaultLambda: "nodejs14.x"
+      apiLambda: "nodejs14.x"

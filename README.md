@@ -14,22 +14,24 @@ Sites from ci/cd process:
 
 ## Contents
 
-- [Overview](#overview)
-- [Getting started](#getting-started)
-- [Install serverless](#install-serverless)
-- [Configuration file](#configuration-file)
-- [Create S3 serverless assets storage bucket](#create-S3-serverless-assets-storage-bucket)
-- [Setup GitHub secrets](#setup-github-secrets)
-- [High level environment setup steps](#high-level-environment-setup-steps)
-- [Create serverless-ENVIRONMENT.yml](#create-serverless-environment.yml)
-- [Create staging GitHub action](#create-staging-github-action)
-- [Initial push](#initial-push)
-- [Finalize staging setup and test](#finalize-staging-setup-and-test)
-- [Create production configuration](#create-production-configuration)
-- [Deploy to production](#deploy-to-production)
-- [Finalize Production CI/CD](#finalize-production-ci/cd)
-- [Removing serverless-nextjs]#removing-serverless-nextjs
-- [Inspired by](#inspired-by)
+- [serverless-nextjs-github-ci-cd](#serverless-nextjs-github-ci-cd)
+  - [Motivation](#motivation)
+  - [Contents](#contents)
+  - [Overview](#overview)
+  - [Getting started](#getting-started)
+  - [Install serverless](#install-serverless)
+  - [Create S3 serverless assets storage bucket](#create-s3-serverless-assets-storage-bucket)
+  - [Setup GitHub secrets](#setup-github-secrets)
+  - [High level environment setup steps](#high-level-environment-setup-steps)
+  - [Create serverless-ENVIRONMENT.yml](#create-serverless-environmentyml)
+  - [Create staging GitHub action](#create-staging-github-action)
+  - [Initial push](#initial-push)
+  - [Finalize staging setup and test](#finalize-staging-setup-and-test)
+  - [Create production configuration](#create-production-configuration)
+  - [Deploy to production](#deploy-to-production)
+  - [Finalize Production CI/CD](#finalize-production-cicd)
+  - [Removing Serverless-nextjs](#removing-serverless-nextjs)
+  - [Inspired by](#inspired-by)
 
 ## Overview
 
@@ -92,36 +94,18 @@ Commit changes.
 Installing the serverless framework as a development dependency results in advantages later on with the ci process.
 
 ```bash
-npm install serverless@1.74.1 --save-dev
-```
-
-_note: the repo pins version numbers that are known to work_
-
-## Configuration file
-
-create next.config.js at the root directory
-
-```bash
-touch next.config.js
-```
-
-with
-
-```javascript
-module.exports = {
-  target: 'serverless',
-};
+npm install serverless@latest --save-dev
 ```
 
 ## Create S3 serverless assets storage bucket
 
-An S3 bucket is needed to store deployment configurations for the serverless-nextjs component. A single bucket can be used for all serverless-nextjs project.
+An S3 bucket is needed to store deployment configurations for the serverless-nextjs component. A single bucket can be used for all serverless-nextjs project. S3 bucket names must be unique within all of AWS. **If you check out this repo YOU MUST CHANGE THE NAME OF THE s3 bucket. You will get an error if you do not.**
 
 Create an S3 bucket named `<YOUR_AWS_USERNAME>-serverless-state-bucket`. Select the settings you'd wish. In general the default options are good. Be sure that "Block all public access" is checked.
 
 ## Setup GitHub secrets
 
-GitHub actions requires your AWS key and secret. These need to be added to your GitHub account as environment variables.
+GitHub actions require your AWS key and secret. These need to be added to your GitHub account as environment variables.
 
 Log in to your GitHub account and navigate to Settings. Select Secrets in the left sidebar. Click New Secret to add `AWS_ACCESS_KEY_ID`. Click New Secret to add `AWS_SECRET_ACCESS_KEY`.
 
@@ -133,7 +117,7 @@ In our scenario there are 3 environments:
 - staging: non production preview of dev environment deployed to AWS
 - prod: the "live" site that users access on AWS
 
-staging and prod environments require their own serverless config file. Setting up a new environment has a similar recipe to the steps below.
+Staging and prod environments require their own serverless config file. Setting up a new environment has a similar recipe to the steps below.
 
 - create a serverless-ENVIRONMENT.yml file with environment configuration
 - create a GitHub action for the environment
@@ -150,10 +134,10 @@ Here is a sample "staging" serverless configuration file.
 name: staging-your-site-name
 
 staging-your-site-name:
-  component: serverless-next.js@1.14.0
+  component: '@sls-next/serverless-component@latest'
   inputs:
     bucketName: staging-your-site-name-s3
-    description: '*lambda-type*@Edge for staging-your-site-name'
+    description: "Lambda@Edge for staging-your-site-name"
     name:
       defaultLambda: staging-your-site-name-lambda
       apiLambda: staging-your-site-name-lambda
@@ -245,10 +229,10 @@ Sample production serverless configuration. An advantage of separate files is th
 name: prod-your-site-name
 
 prod-your-site-name:
-  component: serverless-next.js@1.14.0
+  component: '@sls-next/serverless-component@latest'
   inputs:
     bucketName: prod-your-site-name-s3
-    description: '*lambda-type*@Edge for prod-your-site-name'
+    description: "Lambda@Edge for prod-your-site-name"
     name:
       defaultLambda: prod-your-site-name-lambda
       apiLambda: prod-your-site-name-lambda

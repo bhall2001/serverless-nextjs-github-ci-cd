@@ -1,5 +1,7 @@
 # serverless-nextjs-github-ci-cd
 
+# NO LOGER MAINTAINED. THIS REPO HAS BEEN ARCHIVED
+
 This is an opinionated view of how to setup a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) using [Serverless Nextjs Component](https://github.com/serverless-nextjs/serverless-next.js) with GitHub Actions for ci/cd.
 
 ## Motivation
